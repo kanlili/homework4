@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<head>
+<link href="./ext-3.3.0/resources/css/ext-all.css" rel="stylesheet" type="text/css" />
+<script src="./ext-3.3.0/adapter/ext/ext-base.js" type="text/javascript"></script>
+<script src="./ext-3.3.0/ext-all.js" type="text/javascript"></script>
+<script type="text/javascript">
+   Ext.onReady(function() {
+    var tpl=new Ext.XTemplate([
+    '<table border=1>',
+         '<tpl for="values">',
+         '<tr style="height: 40px;">',
+         '<tpl for="values">',
+         '<td style="width: 40px;"></td>',
+         '</tpl>',
+         '</tr>',
+         '</tpl>',
+    '</table>'
+    ]);
+    var Data;
+    var windows=new Ext.Window({
+       title:'填写表格',
+       width:200,
+       height:200,
+       layout:'form',
+       plain:true,
+       items:[{
+           id:'rows',
+           xtype:'textfield',
+           fieldLabel:'行数'
+       },{
+           id:'cols',
+           xtype:'textfield',
+           fieldLabel:'列数'
+       }],
+       buttons:[{
+           text:'确定',
+           handler:function(){
+            var row = parseInt(Ext.getCmp('rows').getValue());
+            var col = parseInt(Ext.getCmp('cols').getValue());
+            if(!Ext.isEmpty(row)&&!Ext.isEmpty(col)){
+                 Data=new Array(row);
+                 for(let i=0;i<Data.length;i++){
+                  Data[i]=new Array(col)
+                 }
+                 tpl.overwrite(panel2.body,Data)
+                 windows.hide()
+            }
+           }
+       }]
+
+    })
+    var contextmenu=new Ext.menu.Menu({
+        items:[{
+            id:'Reset',
+            text:'Reset'
+        },{
+            id:'Table',
+            text:'Table'
+        }],
+        listeners:{
+             itemclick:function(item){
+                switch(item.id){
+                    case 'Reset':
+                    Ext.getCmp('Editarea').reset();
+                    Ext.getCmp('Rbutton').setDisabled(true);
+                    break;
+                    case 'Table':
+                    windows.show(this)
+                }
+             }
+        }
+    })
+    Ext.get(document).on('contextmenu',function(e){
+        e.preventDefault();
+        contextmenu.showAt(e.getXY());
+    })        
+    var  item1=new Ext.menu.Item(
+         {
+            text:'Reset',
+            handler:function(){
+            Ext.getCmp('Editarea').reset();
+            Ext.getCmp('Rbutton').setDisabled(true);
+            }
+         }
+    );
+    var  item2=new Ext.menu.Item(
+        {
+            text:'Table',
+            handler:function(){
+             windows.show(this)
+            }
+        }
+    );
+    var toolbar=new Ext.Toolbar({
+          items:[{
+              text:'Edit',
+              menu:[item1]
+          },' ',{
+              text:'Insert',
+              menu:[item2]
+          }],
+
+    })
+    var panel=new Ext.Panel({
+        renderTo:'test',
+        title:'BlogReply',
+        width:400,
+        height:400,
+        draggable:true,
+        collapsible:true,
+        tbar:toolbar,
+       
+        items:[{
+            xtype:'textarea',
+            id:'Editarea',
+            width:400,
+            height:400,
+            enbleKeyEvent:true,
+            listeners:{
+                'change' : function (obj, content) {
+                    if(!Ext.getCmp('Editarea').getValue){
+                         Ext.getCmp('Rbutton').setDisabled(true)
+                     }else {
+                         Ext.getCmp('Rbutton').setDisabled(false)
+                     }
+                }
+            }
+        }],
+        
+        
+    })
+    var panel2=new Ext.Panel({
+        renderTo:'test2',
+        id:'panel2',
+        width:400,
+        tpl:tpl,
+        data:Data,
+        buttons:[{
+            id:'Rbutton',
+            text:'Reply',
+            disabled:true,
+            listeners:{
+              click:function(){
+                var progBar = new Ext.ProgressBar({
+                renderTo: Ext.getBody()
+                });
+                progBar.show();
+                progBar.wait({
+                interval: 300,
+                duration: 3000,
+                text: 'Waiting...Replying...',
+                fn: function () {
+                    progBar.hide();
+                    Ext.getCmp('Editarea').reset();
+                    Ext.getCmp('Rbutton').setDisabled(true);
+                    Ext.Msg.alert('Message','Success');
+                }
+               })               
+              }         
+            }
+        }]
+    })
+
+});
+ 
+</script>
+<style>
+</style>
+</head>
+<body>
+   <div id='test'></div>
+   <div id='test2'></div>
+</body>
+</html>
